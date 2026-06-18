@@ -1,0 +1,12 @@
+{
+  "name": "clinic-queue",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "install:all": "npm install --prefix backend && npm install --prefix my-react-app",
+    "dev:backend": "npm run dev --prefix backend",
+    "dev:frontend": "npm run dev --prefix my-react-app",
+    "start:backend": "npm start --prefix backend",
+    "build:frontend": "npm run build --prefix my-react-app"
+  }
+}
