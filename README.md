@@ -32,8 +32,8 @@ npm run install:all
 Or install each part separately:
 
 ```bash
-cd backend && npm install
-cd ../my-react-app && npm install
+cd ./backend && npm install
+cd ./my-react-app && npm install
 ```
 
 2. **Configure backend**
