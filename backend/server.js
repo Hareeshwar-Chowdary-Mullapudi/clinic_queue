@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import dns from 'dns';
 import express from 'express';
 import cors from 'cors';
 import http from 'http';
@@ -9,6 +10,9 @@ import { registerSocketHandlers } from './socket.js';
 const PORT = process.env.PORT || 3001;
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/clinic-queue';
 const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
+
+// Some ISP DNS servers fail MongoDB Atlas SRV lookups; use public DNS as fallback.
+dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1']);
 
 const app = express();
 app.use(cors({ origin: CLIENT_ORIGIN }));
