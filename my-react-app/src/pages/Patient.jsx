@@ -117,7 +117,9 @@ export default function Patient() {
       </div>
 
       {!connected && (
-        <div className="alert warn">Start backend: <code>cd backend && npm run dev</code></div>
+        <div className="alert warn">
+          Backend offline — run <code>cd backend && npm run dev</code> in a terminal, then refresh.
+        </div>
       )}
 
       <div className={`block serving-box ${pulse ? 'pulse' : ''}`}>

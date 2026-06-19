@@ -110,7 +110,12 @@ export default function Receptionist() {
       </div>
 
       {!connected && (
-        <div className="alert warn">Start backend: <code>cd backend && npm run dev</code></div>
+        <div className="alert warn">
+          Backend offline — run <code>cd backend && npm run dev</code> in a terminal, then refresh.
+          {import.meta.env.VITE_SOCKET_URL && (
+            <> Connecting to <code>{import.meta.env.VITE_SOCKET_URL}</code>.</>
+          )}
+        </div>
       )}
       {message && <div className="alert info">{message}</div>}
       {success && <div className="alert ok">{success}</div>}
