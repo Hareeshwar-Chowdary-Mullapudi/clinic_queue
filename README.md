@@ -70,15 +70,6 @@ npm run dev:frontend
 - Patient waiting room: http://localhost:5173/patient
 - Patient with token in URL: http://localhost:5173/patient?token=5
 
-## How This Maps to Review Criteria
-
-| Criteria | Weight | How it's met |
-|----------|--------|--------------|
-| Live queue updates across both screens | 40% | Socket.IO `state_update` broadcast on every action; patient screen updates instantly without refresh |
-| Wait time from real data | 25% | `queueService` computes avg from `completedAt - calledAt` of recent consultations |
-| Receptionist screen fast & mistake-proof | 20% | Enter-to-add, token confirmation, disabled buttons, confirm-before-remove |
-| Concurrency & edge cases | 15% | Atomic token counter, atomic `findOneAndUpdate` on call-next, documented in THOUGHT_PROCESS.md |
-
 ## Wooble Submission Checklist
 
 Upload these four items to your Wooble portfolio:
