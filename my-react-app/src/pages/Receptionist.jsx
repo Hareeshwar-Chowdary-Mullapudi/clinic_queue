@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { IconCheck, IconCheckSimple, IconClock, IconMegaphone, IconUsers } from '../components/Icons.jsx';
 import { emitWithAck, getSocketTarget, socket } from '../socket.js';
 import { useQueueState } from '../useQueueState.js';
 
@@ -90,28 +91,11 @@ export default function Receptionist() {
     }
   };
 
-  const handleRemove = async (num) => {
-    if (busy || !window.confirm(`Remove #${num}?`)) return;
-    setBusy(true);
-    try {
-      await emitWithAck('remove_token', { number: num });
-    } catch (err) {
-      toast(err.message, 'err');
-    } finally {
-      setBusy(false);
-    }
-  };
-
   return (
     <div className="page">
-      <div className="page-title">
-        <h2>Receptionist</h2>
-        <span className={`live-dot ${connected ? 'on' : ''}`}>{connected ? 'Live' : 'Offline'}</span>
-      </div>
-
       {!connected && (
         <div className="alert warn">
-          Backend offline — in a terminal run <code>cd backend && npm run dev</code>, then restart frontend with <code>cd my-react-app && npm run dev</code>.
+          Backend offline — run <code>cd backend && npm run dev</code>, then restart frontend.
           <> Target: <code>{getSocketTarget()}</code>.</>
         </div>
       )}
@@ -136,38 +120,55 @@ export default function Receptionist() {
         </div>
       </form>
 
-      <div className="btn-row">
+      <div className="stats">
+        <div className="stat-card">
+          <div className="stat-icon teal">
+            <IconUsers />
+          </div>
+          <div className="stat-info">
+            <div className="label">Serving</div>
+            <div className="value teal">{state.nowServing ? `#${state.nowServing.number}` : '—'}</div>
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon orange">
+            <IconClock />
+          </div>
+          <div className="stat-info">
+            <div className="label">Waiting</div>
+            <div className="value orange">{state.waiting.length}</div>
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon green">
+            <IconCheck />
+          </div>
+          <div className="stat-info">
+            <div className="label">Done</div>
+            <div className="value green">{state.totalDone}</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="actions">
         <button
           type="button"
-          className="btn btn-blue"
+          className="btn btn-call"
           onClick={handleCallNext}
           disabled={busy || !connected || !state.waiting.length || state.nowServing}
         >
+          <IconMegaphone />
           Call Next
         </button>
         <button
           type="button"
-          className="btn btn-secondary"
+          className="btn btn-complete"
           onClick={handleComplete}
           disabled={busy || !connected || !state.nowServing}
         >
+          <IconCheckSimple />
           Complete
         </button>
-      </div>
-
-      <div className="stats-row">
-        <div className="stat-box">
-          <span className="num">{state.nowServing ? `#${state.nowServing.number}` : '—'}</span>
-          <span className="txt">Serving</span>
-        </div>
-        <div className="stat-box">
-          <span className="num">{state.waiting.length}</span>
-          <span className="txt">Waiting</span>
-        </div>
-        <div className="stat-box">
-          <span className="num">{state.totalDone}</span>
-          <span className="txt">Done</span>
-        </div>
       </div>
 
       <form className="block settings-row" onSubmit={handleSaveAvg}>
@@ -183,58 +184,6 @@ export default function Receptionist() {
         <span>min</span>
         <button type="submit" className="btn btn-secondary" disabled={busy || !connected}>Save</button>
       </form>
-
-      <div className="block queue-block">
-        <p className="queue-title">Queue</p>
-        {state.waiting.length === 0 && !state.nowServing ? (
-          <p className="empty">No patients yet</p>
-        ) : (
-          <div className="table-wrap">
-            <table className="queue-table">
-              <thead>
-                <tr>
-                  <th>Token ID</th>
-                  <th>Patient Name</th>
-                  <th>Est. Wait</th>
-                  <th className="col-action" />
-                </tr>
-              </thead>
-              <tbody>
-                {state.nowServing && (
-                  <tr className="row-serving">
-                    <td><span className="token-num live">#{state.nowServing.number}</span></td>
-                    <td className="queue-name">{state.nowServing.name}</td>
-                    <td className="queue-meta">Now</td>
-                    <td />
-                  </tr>
-                )}
-                {state.waiting.map((t) => (
-                  <tr key={t.number}>
-                    <td><span className="token-num">#{t.number}</span></td>
-                    <td className="queue-name">{t.name}</td>
-                    <td className="queue-meta">~{t.estimatedWaitMin} min</td>
-                    <td className="col-action">
-                      <button
-                        type="button"
-                        className="btn btn-delete"
-                        onClick={() => handleRemove(t.number)}
-                        disabled={busy}
-                        aria-label={`Delete token ${t.number}`}
-                        title="Delete"
-                      >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                          <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" />
-                          <path d="M10 11v6M14 11v6" />
-                        </svg>
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
     </div>
   );
 }

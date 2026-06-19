@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import PatientAvatar from '../components/PatientAvatar.jsx';
+import { IconClock, IconUser, IconUsers } from '../components/Icons.jsx';
 import { emitWithAck, getSocketTarget } from '../socket.js';
 import { useQueueState } from '../useQueueState.js';
 
@@ -111,19 +113,14 @@ export default function Patient() {
 
   return (
     <div className="page">
-      <div className="page-title">
-        <h2>Waiting Room</h2>
-        <span className={`live-dot ${connected ? 'on' : ''}`}>{connected ? 'Live' : 'Offline'}</span>
-      </div>
-
       {!connected && (
         <div className="alert warn">
-          Backend offline — run <code>cd backend && npm run dev</code>, then restart frontend with <code>cd my-react-app && npm run dev</code>.
+          Backend offline — run <code>cd backend && npm run dev</code>, then restart frontend.
           <> Target: <code>{getSocketTarget()}</code>.</>
         </div>
       )}
 
-      <div className={`block serving-box ${pulse ? 'pulse' : ''}`}>
+      <div className={`serving-box ${pulse ? 'pulse' : ''}`}>
         <span className="label">Now Serving</span>
         {state.nowServing ? (
           <>
@@ -142,7 +139,7 @@ export default function Patient() {
           check(tokenInput, state);
         }}
       >
-        <label className="block-label" htmlFor="token">Check token</label>
+        <label className="block-label" htmlFor="token">Check your token</label>
         <div className="field-row">
           <input
             id="token"
@@ -153,7 +150,7 @@ export default function Patient() {
               setTokenInput(e.target.value);
               setMessage('');
             }}
-            placeholder="Enter number"
+            placeholder="Enter token number"
             autoComplete="off"
           />
           <button type="submit" className="btn btn-primary" disabled={!tokenInput.trim() || !connected || loading}>
@@ -164,18 +161,34 @@ export default function Patient() {
       </form>
 
       {yourStatus && (
-        <div className="status-row">
-          <div className="status-card">
-            <span className="big">#{yourStatus.yourToken}</span>
-            <span className={`${badgeClass}`}>{yourStatus.status}</span>
+        <div className="stats">
+          <div className="stat-card">
+            <div className="stat-icon blue">
+              <IconUser />
+            </div>
+            <div className="stat-info">
+              <div className="label">Your Token</div>
+              <div className="value blue">#{yourStatus.yourToken}</div>
+              <span className={badgeClass}>{yourStatus.status}</span>
+            </div>
           </div>
-          <div className="status-card">
-            <span className="big">{yourStatus.tokensAhead}</span>
-            <span className="small">Tokens Ahead</span>
+          <div className="stat-card">
+            <div className="stat-icon orange">
+              <IconUsers />
+            </div>
+            <div className="stat-info">
+              <div className="label">Tokens Ahead</div>
+              <div className="value orange">{yourStatus.tokensAhead}</div>
+            </div>
           </div>
-          <div className="status-card">
-            <span className="big">~{yourStatus.estimatedWaitMin}m</span>
-            <span className="small">Estimated Wait</span>
+          <div className="stat-card">
+            <div className="stat-icon teal">
+              <IconClock />
+            </div>
+            <div className="stat-info">
+              <div className="label">Estimated Wait</div>
+              <div className="value teal">~{yourStatus.estimatedWaitMin}m</div>
+            </div>
           </div>
         </div>
       )}
@@ -189,11 +202,10 @@ export default function Patient() {
       )}
 
       {!yourStatus && !message && !tokenInput && (
-        <p className="hint">Enter your token or tap a name below</p>
+        <p className="hint">Enter your token or tap a name in the queue below</p>
       )}
 
-      <div className="block queue-block">
-        <p className="queue-title">Queue</p>
+      <div className="table-card">
         {state.waiting.length === 0 && !state.nowServing ? (
           <p className="empty">Queue is empty</p>
         ) : (
@@ -210,8 +222,14 @@ export default function Patient() {
                 {state.nowServing && (
                   <tr className="row-serving">
                     <td><span className="token-num live">#{state.nowServing.number}</span></td>
-                    <td className="queue-name">{state.nowServing.name}</td>
-                    <td className="queue-meta">Now</td>
+                    <td>
+                      <div className="patient-cell">
+                        <PatientAvatar />
+                        <span className="patient-name">{state.nowServing.name}</span>
+                        <span className="badge-now">Now</span>
+                      </div>
+                    </td>
+                    <td><span className="queue-meta now">Now</span></td>
                   </tr>
                 )}
                 {state.waiting.map((t) => (
@@ -221,8 +239,13 @@ export default function Patient() {
                     onClick={() => check(String(t.number), state)}
                   >
                     <td><span className="token-num">#{t.number}</span></td>
-                    <td className="queue-name">{t.name}</td>
-                    <td className="queue-meta">~{t.estimatedWaitMin} min</td>
+                    <td>
+                      <div className="patient-cell">
+                        <PatientAvatar />
+                        <span className="patient-name">{t.name}</span>
+                      </div>
+                    </td>
+                    <td><span className="queue-meta">~{t.estimatedWaitMin} min</span></td>
                   </tr>
                 ))}
               </tbody>

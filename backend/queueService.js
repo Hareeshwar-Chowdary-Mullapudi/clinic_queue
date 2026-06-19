@@ -42,10 +42,11 @@ export async function buildState() {
   const settings = await getSettings();
   const { effectiveAvg, isDataDriven, sampleCount } = await computeEffectiveAvgMinutes(settings.avgConsultMinutes);
 
-  const [nowServing, waitingTokens, totalDone] = await Promise.all([
+  const [nowServing, waitingTokens, totalDone, doneTokens] = await Promise.all([
     Token.findOne({ status: 'serving' }).sort({ calledAt: 1 }).lean(),
     Token.find({ status: 'waiting' }).sort({ number: 1 }).lean(),
     Token.countDocuments({ status: 'done' }),
+    Token.find({ status: 'done' }).sort({ completedAt: 1 }).lean(),
   ]);
 
   const remainingCurrent = remainingServingMinutes(nowServing, effectiveAvg);
@@ -55,6 +56,18 @@ export async function buildState() {
     name: token.name,
     position: index + 1,
     estimatedWaitMin: Math.round((remainingCurrent + index * effectiveAvg) * 10) / 10,
+  }));
+
+  const history = doneTokens.map((token, index) => ({
+    visitOrder: index + 1,
+    number: token.number,
+    name: token.name,
+    calledAt: token.calledAt,
+    completedAt: token.completedAt,
+    durationMin:
+      token.calledAt && token.completedAt
+        ? Math.round(((token.completedAt - token.calledAt) / 60000) * 10) / 10
+        : null,
   }));
 
   return {
@@ -67,6 +80,7 @@ export async function buildState() {
         }
       : null,
     waiting,
+    history,
     avgUsedMinutes: effectiveAvg,
     isDataDriven,
     sampleCount,

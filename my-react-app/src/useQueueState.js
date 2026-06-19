@@ -4,6 +4,7 @@ import { emitWithAck, socket } from './socket.js';
 export const emptyQueueState = {
   nowServing: null,
   waiting: [],
+  history: [],
   avgUsedMinutes: 10,
   settingsAvg: 10,
   isDataDriven: false,
