@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { emitWithAck } from '../socket.js';
+import { emitWithAck, getSocketTarget } from '../socket.js';
 import { useQueueState } from '../useQueueState.js';
 
 function deriveStatus(state, token) {
@@ -118,7 +118,8 @@ export default function Patient() {
 
       {!connected && (
         <div className="alert warn">
-          Backend offline — run <code>cd backend && npm run dev</code> in a terminal, then refresh.
+          Backend offline — run <code>cd backend && npm run dev</code>, then restart frontend with <code>cd my-react-app && npm run dev</code>.
+          <> Target: <code>{getSocketTarget()}</code>.</>
         </div>
       )}
 

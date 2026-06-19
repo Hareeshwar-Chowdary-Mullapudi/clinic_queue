@@ -18,13 +18,8 @@ const CLIENT_ORIGINS = (process.env.CLIENT_ORIGIN || DEFAULT_ORIGINS.join(','))
 // Some ISP DNS servers fail MongoDB Atlas SRV lookups; use public DNS as fallback.
 dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1']);
 
-function isAllowedOrigin(origin) {
-  if (!origin) return true;
-  return CLIENT_ORIGINS.includes(origin.replace(/\/+$/, ''));
-}
-
 const app = express();
-app.use(cors({ origin: isAllowedOrigin, credentials: true }));
+app.use(cors({ origin: CLIENT_ORIGINS, credentials: true }));
 app.use(express.json());
 
 app.get('/health', (_req, res) => {
@@ -34,7 +29,7 @@ app.get('/health', (_req, res) => {
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: isAllowedOrigin,
+    origin: CLIENT_ORIGINS,
     methods: ['GET', 'POST'],
     credentials: true,
   },

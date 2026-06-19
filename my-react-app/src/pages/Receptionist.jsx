@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { emitWithAck, socket } from '../socket.js';
+import { emitWithAck, getSocketTarget, socket } from '../socket.js';
 import { useQueueState } from '../useQueueState.js';
 
 export default function Receptionist() {
@@ -111,10 +111,8 @@ export default function Receptionist() {
 
       {!connected && (
         <div className="alert warn">
-          Backend offline — run <code>cd backend && npm run dev</code> in a terminal, then refresh.
-          {import.meta.env.VITE_SOCKET_URL && (
-            <> Connecting to <code>{import.meta.env.VITE_SOCKET_URL}</code>.</>
-          )}
+          Backend offline — in a terminal run <code>cd backend && npm run dev</code>, then restart frontend with <code>cd my-react-app && npm run dev</code>.
+          <> Target: <code>{getSocketTarget()}</code>.</>
         </div>
       )}
       {message && <div className="alert info">{message}</div>}
