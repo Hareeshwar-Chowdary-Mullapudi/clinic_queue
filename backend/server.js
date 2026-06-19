@@ -9,13 +9,22 @@ import { registerSocketHandlers } from './socket.js';
 
 const PORT = process.env.PORT || 3001;
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/clinic-queue';
-const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
+const DEFAULT_ORIGINS = ['http://localhost:5173', 'http://127.0.0.1:5173'];
+const CLIENT_ORIGINS = (process.env.CLIENT_ORIGIN || DEFAULT_ORIGINS.join(','))
+  .split(',')
+  .map((origin) => origin.trim().replace(/\/+$/, ''))
+  .filter(Boolean);
 
 // Some ISP DNS servers fail MongoDB Atlas SRV lookups; use public DNS as fallback.
 dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1']);
 
+function isAllowedOrigin(origin) {
+  if (!origin) return true;
+  return CLIENT_ORIGINS.includes(origin.replace(/\/+$/, ''));
+}
+
 const app = express();
-app.use(cors({ origin: CLIENT_ORIGIN }));
+app.use(cors({ origin: isAllowedOrigin, credentials: true }));
 app.use(express.json());
 
 app.get('/health', (_req, res) => {
@@ -25,8 +34,9 @@ app.get('/health', (_req, res) => {
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: CLIENT_ORIGIN,
+    origin: isAllowedOrigin,
     methods: ['GET', 'POST'],
+    credentials: true,
   },
 });
 
